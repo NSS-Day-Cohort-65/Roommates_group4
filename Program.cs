@@ -53,38 +53,69 @@ app.MapGet("/rooms/{id}", (int id) =>
     // get room first (by id)
     Room room = rooms.FirstOrDefault(r => r.Id == id);
     // include all roommates in that room
-    room.Roommates = roommates.Where(rm => rm.RoomId == room.Id).ToList();
+
+    // if(room == null)
+    // {
+    //     return Results.NotFound();
+    // }
+    //     room.Roommates = roommates.Where(rm => rm.RoomId == room.Id).ToList();
+    //     return Results.Ok(room);
+
+    try
+    {
+        room.Roommates = roommates.Where(rm => rm.RoomId == room.Id).ToList();
+        return Results.Ok(room);
+    }
+    catch (Exception ex)
+    {
+        return Results.NotFound(ex.Message);
+    }
     //return the matches
-    return Results.Ok(room);
 
 });
 // update room
-//1 get room by Id
-
-//*PICK UP HERE ON 9/6
-
 app.MapPut("/rooms/{id}", (int id, Room room) =>
 {
+    //1 get room by Id
     Room roomToUpdate = rooms.FirstOrDefault(rm => rm.Id == id);
+    //2 IndexOf method on the room to update
     int roomIndex = rooms.IndexOf(roomToUpdate);
+    //3 replace original object with updated object
     rooms[roomIndex] = room;
+    //4 return results ok
     return Results.Ok();
 });
 
-//2 IndexOf method on the room to update
 
-//3 replace original object with updated object
-//4 return results ok
 
 // delete a room
+app.MapDelete("/rooms/{id}", (int id) =>
+{
+    Room room = rooms.FirstOrDefault(r => r.Id == id);
 
+    if (room == null)
+    {
+        return Results.NotFound("I couldn't find that ID.");
+    }
+    rooms.Remove(room);
+    return Results.Ok("Room deleted successfully!");
+});
 // get roommates
 app.MapGet("/roommates", () =>
 {
     return roommates;
 });
 // get roommate with chores
-
+app.MapGet("/roommates/{id}", (int id) =>
+{
+    Roommate roommate = roommates.FirstOrDefault(rm => rm.Id == id);
+    if (roommate == null)
+    {
+        return Results.NotFound();
+    }
+    roommate.Chores = chores.Where(c => c.RoommateId == roommate.Id).ToList();
+    return Results.Ok(roommate);
+});
 // add a roommate
 
 // assign a roommate to a chore
